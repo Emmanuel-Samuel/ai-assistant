@@ -1,0 +1,163 @@
+<!-- 
+    PROGRAMMER: EMMANUEL SAMUEL
+    DATE CREATED: 1/04/2023
+    DATE REVISED: 3/04/2023
+    PURPOSE: Create an AI Chatbot Assistant
+ -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HomePage</title>
+
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'blog/style.css' %}"/>
+
+  <!-- Jquery used to get user input -->
+  <script src="https://code.jquery.com/jquery-3.6.4.js" integrity="sha256-a9jBBRygX1Bh5lt8GZjXDzyOB+bWve9EiO7tROUtj/E=" crossorigin="anonymous"></script>
+
+</head>
+<body>
+
+    <!-- App Design Interface -->
+    <h1>AI ChatBot App</h1>
+
+    <div>
+        <div id="chatbot">
+            <p class="bottext"><span>Welcome, my name is Alicia</span></p>
+        </div>
+
+        <div id="userinput">
+            <input type="text" id="textinput" name="usermassage" placeholder="Type your message...." />
+            <input type="submit" value="Send" id="buttoninput" />
+        </div>
+    </div>
+
+
+    <script>
+
+        initializeoptions();
+
+        function initializeoptions(){
+
+            let options = [
+                {number:1, title:'Get Weather Info'},
+                {number:2, title:'Get News Headlines'},
+                {number:3, title:'Chat'}
+            ]
+
+            var html = "<p class='bottext'>Please input a number to make a selection: </p>";
+                $("#chatbot").append(html);
+
+            for(let i=0; i<options.length; i++){
+                var html = "<p class='bottext'><span>"+ options[i].number + "-" + options[i].title +"</span></p>";
+                $("#chatbot").append(html);
+            }
+
+            var chatbot = document.getElementById('chatbot')
+            chatbot.scrollTop = chatbot.scrollHeight;
+        }
+
+
+        function sendmessage(messagetext){
+
+            var userhtml = "<p class='usertext'>User: <span>"+messagetext+"</span></p>";
+            $("#chatbot").append(userhtml);
+        }
+
+
+        // Get user response
+        function getuserresponse(messagetext){
+
+
+            $.get('/blog/getresponse',{usermessage:messagetext}).done(function(data){
+
+                console.log(data)
+                var returnedmessage = "<p class='bottext'>Alicia: <span>"+ data +"</span></p>";
+                 $('#chatbot').append(returnedmessage);
+            })
+        }
+
+
+        // returns weather information
+        function getweather(){
+
+            navigator.geolocation.getCurrentPosition((pos)=>{
+
+                let lat = pos.coords.latitude;
+                let long = pos.coords.longitude;
+
+                    $.get('/blog/getweather',{lat:lat, long:long}).done(function(data){
+
+                            console.log(data)
+                            var returnedmessage = "<p class='bottext'>City: <span>"+ data.name +"</span></p>"+
+                                                  "<p class='bottext'>Temperature: <span>"+ data.main.temp +"</span> degree celsius</p>"+
+                                                  "<p class='bottext'>Humidty: <span>"+ data.main.humidity +"</span></p>"+
+                                                  "<p class='bottext'>Cloud: <span>"+ data.weather[0].description +"</span></p>";
+                            $('#chatbot').append(returnedmessage);
+                        })
+            })
+
+        }
+        
+
+        function getnews(){
+
+            $.get('/blog/getnews').done(function(data){
+
+
+                    for(let i=0; i<5; i++){
+
+                        console.log(data)
+                    var returnedmessage = "<p class='bottext'>Headlines: <span>"+ data.articles[i].title +"</span></p>"+
+                                          "<img src='"+data.articles[0].urlToImage+"' style='width:200px' />"+
+                                            //"<p class='bottext'>Alicia: <span>"+ data.articles[i].description +"</span></p>"+
+                                          "<br/>";
+                    
+                        $('#chatbot').append(returnedmessage);
+                    }                    
+                    })
+        }
+
+
+        function assistantresponse(messagetext){
+
+            if(messagetext == '1'){
+                //send weather
+                getweather();
+
+            }
+            else if(messagetext == '2'){
+                //send news
+                getnews();
+            }
+            else{
+                //chat with user
+                getuserresponse(messagetext);
+            }
+
+        }
+
+
+        $('#buttoninput').click(function(){
+
+            var usertext = $('#textinput').val();
+            $('#textinput').val("");
+
+            if(usertext == ''){
+                alert("Please type in a message")
+            }
+            else{
+                let messagetext = usertext.trim();
+                sendmessage(messagetext);
+                assistantresponse(messagetext);
+            }
+        })
+
+
+    </script>
+
+</body>
+</html>
