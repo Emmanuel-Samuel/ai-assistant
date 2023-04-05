@@ -1,0 +1,5 @@
+chatterbot
+chatterbot-corpus
+pyyaml
+python3 -m spacy download en 
+spacey
