@@ -34,7 +34,7 @@
 
 
 ## Screenshots
-![Example screenshot](/ai assistant.gif)
+![Example screenshot](/bot.png)
 
 
 
